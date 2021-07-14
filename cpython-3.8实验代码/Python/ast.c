@@ -2799,7 +2799,7 @@ ast_for_factor(struct compiling *c, const node *n)
                            n->n_end_lineno, n->n_end_col_offset,
                            c->c_arena);
         case NOT:
-            return UnaryOp(JiaJia, expression, LINENO(n), n->n_col_offset,
+            return UnaryOp(Not, expression, LINENO(n), n->n_col_offset,
                            n->n_end_lineno, n->n_end_col_offset,
                            c->c_arena);
     }

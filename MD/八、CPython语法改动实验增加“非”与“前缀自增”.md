@@ -818,7 +818,7 @@
 ## 2.CPython编译器前端改动实验：“非”
 
 * 实现一个前缀“非”操作，即逻辑取反。为了避免语法冲突这里使用双!的形式
-* 由于CPython官方实现了UNARY_NOT字节码及相关逻辑，但是不支持前端的！语法。所以实现这个语法特性只需要修改前端使其能够识别该形式，然后在compile的过程中增加一个UNARY_NOT的opcode。
+* 由于CPython官方实现了一元非操作的AST结构和UNARY_NOT字节码及相关逻辑，但是不支持前端的！语法。所以实现这个语法特性只需要修改前端使其能够识别该形式，然后在生成AST的过程中将前端一元非翻译为对应的AST节点即可。
 
 ### 2.1.改动总图
 
@@ -912,21 +912,14 @@
 
 ### 2.3.AST
 
-* 在Python.asdl中加入新AST节点类型：
+* 我们查看Python.asdl可以发现，CPython已经实现了一元非的AST逻辑，以及相应的字节码部分，不过并不是用来支持前端一元非语法的。也就是说在后端支持该特性但在前端并不支持。
 
   ```c
   // Parse/Python.asdl
-  unaryop = Invert | Not | UAdd | USub ｜ JiaJia
+  unaryop = Invert | Not | UAdd | USub 
   ```
 
-* 重新编译：
-
-  ```shell
-  // shell
-  make regen-ast
-  ```
-
-* 在ast.c中新增翻译方式：
+* 所以我们只需要将刚刚完成的前端翻译到对应的后端AST即可，在ast.c中新增翻译方式：
 
   ```c
   
@@ -953,7 +946,7 @@
                              n->n_end_lineno, n->n_end_col_offset,
                              c->c_arena);
           case NOT:
-              return UnaryOp(JiaJia, expression, LINENO(n), n->n_col_offset,
+              return UnaryOp(Not, expression, LINENO(n), n->n_col_offset,
                              n->n_end_lineno, n->n_end_col_offset,
                              c->c_arena);
       }
@@ -994,99 +987,15 @@
                  ['power', ['atom_expr', ['atom', ['NAME', 'a']]]]]]]]]]]]]]]]]],
    ['NEWLINE', ''],
    ['ENDMARKER', '']]
-  Module(body=[Expr(value=UnaryOp(op=JiaJia(), operand=Name(id='a', ctx=Load())))], type_ignores=[])
+  Module(body=[Expr(value=UnaryOp(op=Not(), operand=Name(id='a', ctx=Load())))], type_ignores=[])
   ```
 
   得到正确的AST结构。
 
-### 2.4.Compile
+* 最终在终端中确认该语法结果正确：
 
-* 最后需要在compile.c中将包含JiaJia的UnaryOp节点翻译为UNARY_NOT命令。观察到生成命令位置在：
-
-  ```c
-  // Python/compile.c中节选
+  ![](./pic/not_test.png)
   
-  static int
-  compiler_visit_expr1(struct compiler *c, expr_ty e)
-  {
-      switch (e->kind) {
-      ...
-      case UnaryOp_kind:
-          VISIT(c, expr, e->v.UnaryOp.operand);
-          ADDOP(c, unaryop(e->v.UnaryOp.op));
-          break;
-      ...
-      return 1;
-  }
-  ```
-
-* 其中调用了一个unaryop函数来根据op选择字节码。所以只需要改动这一个函数：
-
-  ```c
-  // Python/compile.c中节选
-  
-  static int
-  unaryop(unaryop_ty op)
-  {
-      switch (op) {
-      case Invert:
-          return UNARY_INVERT;
-      case Not:
-          return UNARY_NOT;
-      case UAdd:
-          return UNARY_POSITIVE;
-      case USub:
-          return UNARY_NEGATIVE;
-      case JiaJia:
-          return UNARY_NOT;
-      default:
-          PyErr_Format(PyExc_SystemError,
-              "unary op %d should not be possible", op);
-          return 0;
-      }
-  }
-  ```
-
-* 重新编译：
-
-  ```shell
-  // shell
-  make -j4
-  ```
-
-* 将test.py最后一行注释删除，运行测试文件：
-
-  ```shell
-  // shell
-  $ ./python.exe test.py
-  ['eval_input',
-   ['testlist',
-    ['test',
-     ['or_test',
-      ['and_test',
-       ['not_test',
-        ['comparison',
-         ['expr',
-          ['xor_expr',
-           ['and_expr',
-            ['shift_expr',
-             ['arith_expr',
-              ['term',
-               ['factor',
-                ['NOT', '!!'],
-                ['factor',
-                 ['power', ['atom_expr', ['atom', ['NAME', 'a']]]]]]]]]]]]]]]]]],
-   ['NEWLINE', ''],
-   ['ENDMARKER', '']]
-  Module(body=[Expr(value=UnaryOp(op=JiaJia(), operand=Name(id='a', ctx=Load())))], type_ignores=[])
-    1           0 LOAD_NAME                0 (a)
-                2 UNARY_NOT
-                4 RETURN_VALUE
-  ```
-
-* 发现生成正确的字节码。最终在终端中确认该语法结果正确：
-
-  ![](./MD/pic/not_test.png)
 
 ## 3.CPython编译器后端改动实验：“前缀++”
 
