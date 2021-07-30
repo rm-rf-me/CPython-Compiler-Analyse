@@ -1,6 +1,10 @@
 # CPython-Compiler-Analyse
 
 CPython3.8编译器分析
+> 在之前的一段时间里，我做了一些关于CPython虚拟机分析和改动的工作。在查找相关资料的过程中发现，目前我所能找到的这个领域的中文资料还很少，尤其是没有一个成套的、足够细致而且易于理解的资料能够帮助我一下子入门并且明白我需要做什么。在这个过程中我走了许多弯路，查阅了大量资料，才初步的了解了CPython编译器的大概框架。所以我写这一系列博客的目的，就是想要做出一个能够把CPython编译器从头讲到尾，能让一个完全不了解CPython甚至不了解Python的人看明白CPython编译器的整个架构。算是补齐中文博客对这个领域的一点空白。
+
+> 这个系列并没有按照目录顺序进行编写，整个系列的第一篇反倒是最后一篇：[CPython语法改动实验:“非”和“前缀自增”](./八、CPython语法改动实验增加“非”与“前缀自增”.pdf)（已完成）。我想写的东西很多而写的速度又很慢，所以我并不确定自己有没有毅力把这个系列写完。而不管我有没有写完，我都推荐每个读者去看一下最后一篇[reference.md](./MD/reference.md)，这里面包含了我认为很有用的资料，能够帮助你找到更多信息。
+
 
 ## 目录
 
@@ -14,13 +18,10 @@ CPython3.8编译器分析
 5. CPython符号表和CFG生成（未完成）
 6. CPython字节码生成和窥孔优化（未完成）
 7. CPython字节码执行（未完成）
-8. [CPython语法改动实验:“非”和“前缀++”](https://github.com/rm-rf-me/CPython-Compiler-Analyse/blob/main/%E5%85%AB%E3%80%81CPython%E8%AF%AD%E6%B3%95%E6%94%B9%E5%8A%A8%E5%AE%9E%E9%AA%8C%E5%A2%9E%E5%8A%A0%E2%80%9C%E9%9D%9E%E2%80%9D%E4%B8%8E%E2%80%9C%E5%89%8D%E7%BC%80%E8%87%AA%E5%A2%9E%E2%80%9D.pdf)（已完成）
-9.  reference（未全部完成）
+8. [CPython语法改动实验:“非”和“前缀自增”](./八、CPython语法改动实验增加“非”与“前缀自增”.pdf)（已完成）
+9.  [reference.md](./MD/reference.md)（正在更新）
 
 
 
 如有任何问题，欢迎提交issue。未经许可禁止转载。
 
-
-<img alt="知识共享许可协议" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-nd/4.0/88x31.png" />
-本作品采用<a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可。
